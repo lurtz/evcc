@@ -34,6 +34,10 @@ func (conn *Connector) OnStatusNotification(request *core.StatusNotificationRequ
 		close(conn.statusC) // signal initial status received
 		applied = true
 	} else if request.Timestamp == nil || conn.timestampValid(request.Timestamp.Time) {
+		// Any state transition away from Charging means no power is flowing anymore
+		if conn.status.Status == core.ChargePointStatusCharging && request.Status != core.ChargePointStatusCharging {
+			conn.assumeMeterStopped()
+		}
 		conn.status = request
 		applied = true
 	} else {

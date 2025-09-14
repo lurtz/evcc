@@ -282,3 +282,34 @@ func (suite *connTestSuite) TestOnStopTransactionResetsReportedPower() {
 	suite.NoError(err, "CurrentPower")
 	suite.Equal(res, 0.0, "CurrentPower")
 }
+
+func (suite *connTestSuite) TestWhenTransitioningFromChargingOnStatusNotificationResetsReportedPower() {
+	suite.conn.meterUpdated = suite.clock.Now()
+
+	// Initial state
+	requestCharge := core.StatusNotificationRequest{
+		Status: core.ChargePointStatusCharging,
+	}
+	_, err := suite.conn.OnStatusNotification(&requestCharge)
+	suite.NoError(err, "OnStatusNotification")
+
+	// Set some power
+	suite.conn.measurements[types.MeasurandPowerActiveImport+".L1-N"] = types.SampledValue{Value: "1"}
+	suite.conn.measurements[types.MeasurandPowerActiveImport+".L2-N"] = types.SampledValue{Value: "1"}
+	suite.conn.measurements[types.MeasurandPowerActiveImport+".L3-N"] = types.SampledValue{Value: "1"}
+
+	res, err := suite.conn.CurrentPower()
+	suite.NoError(err, "CurrentPower")
+	suite.Equal(3.0, res, "CurrentPower")
+
+	// Set powers to zero
+	requestStop := core.StatusNotificationRequest{
+		Status: core.ChargePointStatusAvailable,
+	}
+	_, err = suite.conn.OnStatusNotification(&requestStop)
+	suite.NoError(err, "OnStatusNotification")
+
+	res, err = suite.conn.CurrentPower()
+	suite.NoError(err, "CurrentPower")
+	suite.Equal(0.0, res, "CurrentPower")
+}

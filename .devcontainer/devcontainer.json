@@ -2,15 +2,9 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/go
 {
 	"name": "evcc",
-	"image": "mcr.microsoft.com/devcontainers/go",
+	"image": "mcr.microsoft.com/devcontainers/go:2-1.26-trixie",
 	"features": {
-		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
-			"moby": false,
-			"installDockerBuildx": true,
-			"installDockerComposeSwitch": true,
-			"version": "latest",
-			"dockerDashComposeVersion": "v2"
-		},
+		"ghcr.io/helpers4/devcontainer/vite-plus:1": {},
 		"ghcr.io/devcontainers/features/node:1": {
 			"nodeGypDependencies": true,
 			"installYarnUsingApt": true,

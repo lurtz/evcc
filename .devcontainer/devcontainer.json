@@ -4,13 +4,6 @@
 	"name": "evcc",
 	"image": "mcr.microsoft.com/devcontainers/go:2-1.25-trixie",
 	"features": {
-		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
-			"moby": false,
-			"installDockerBuildx": true,
-			"installDockerComposeSwitch": true,
-			"version": "latest",
-			"dockerDashComposeVersion": "v2"
-		},
 		"ghcr.io/devcontainers/features/node:1": {
 			"nodeGypDependencies": true,
 			"installYarnUsingApt": true,

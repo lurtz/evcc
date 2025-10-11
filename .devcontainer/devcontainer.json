@@ -4,13 +4,6 @@
 	"name": "evcc",
 	"image": "ghcr.io/voidzero-dev/vite-plus@sha256:de284eb61eb6ee5fe1da3824032ed6fb37827eecd597d0d796cacd4434f806ea",
 	"features": {
-		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
-			"moby": false,
-			"installDockerBuildx": true,
-			"installDockerComposeSwitch": true,
-			"version": "latest",
-			"dockerDashComposeVersion": "v2"
-		},
 		"ghcr.io/devcontainers/features/go:1": {
 			"version": "1.27.0",
 			"installGoTools": false

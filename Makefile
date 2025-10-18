@@ -99,6 +99,8 @@ docker::
 
 podman::
 	@echo Version: $(VERSION) $(SHA) $(BUILD_DATE)
+	# might not be needed
+	export BUILDAH_FORMAT=docker
 	podman build --platform $(PLATFORM) --tag $(DOCKER_IMAGE):$(DOCKER_TAG) --format docker .
 
 publish-nightly::

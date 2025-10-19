@@ -17,6 +17,9 @@ DOCKER_IMAGE ?= evcc/evcc
 DOCKER_TAG ?= testing
 PLATFORM ?= linux/amd64,linux/arm64,linux/arm/v6
 
+# podman docker compatibility, might not be needed
+export BUILDAH_FORMAT=docker
+
 # gokrazy image
 GOK_DIR := packaging/gokrazy
 GOK := gok -i evcc --parent_dir $(GOK_DIR)
@@ -96,6 +99,10 @@ release::
 docker::
 	@echo Version: $(VERSION) $(SHA) $(BUILD_DATE)
 	docker buildx build --platform $(PLATFORM) --tag $(DOCKER_IMAGE):$(DOCKER_TAG) --push .
+
+podman::
+	@echo Version: $(VERSION) $(SHA) $(BUILD_DATE)
+	podman build --platform $(PLATFORM) --tag $(DOCKER_IMAGE):$(DOCKER_TAG) --format docker .
 
 publish-nightly::
 	@echo Version: $(VERSION) $(SHA) $(BUILD_DATE)

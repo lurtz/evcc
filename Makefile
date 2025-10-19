@@ -102,6 +102,12 @@ docker::
 	@echo Version: $(VERSION) $(SHA) $(BUILD_DATE)
 	docker buildx build --platform $(PLATFORM) --tag $(DOCKER_IMAGE):$(DOCKER_TAG) --push .
 
+podman::
+	@echo Version: $(VERSION) $(SHA) $(BUILD_DATE)
+	podman manifest create $(DOCKER_IMAGE):$(DOCKER_TAG)
+	podman build --platform $(PLATFORM) --manifest $(DOCKER_IMAGE):$(DOCKER_TAG) --format docker .
+	podman manifest push $(DOCKER_IMAGE):$(DOCKER_TAG)
+
 publish-nightly::
 	@echo Version: $(VERSION) $(SHA) $(BUILD_DATE)
 	docker buildx build --platform $(PLATFORM) --tag $(DOCKER_IMAGE):nightly --push .

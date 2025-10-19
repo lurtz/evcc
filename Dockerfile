@@ -12,8 +12,7 @@ RUN npm ci
 # build ui
 COPY Makefile .
 COPY *.js ./
-# .storybook directory is in .dockerignore and the only directory which could provide these files
-# COPY .*.ts .*.mts ./
+COPY .*.ts .*.mts ./
 COPY *.ts *.mts ./
 COPY assets assets
 COPY i18n i18n

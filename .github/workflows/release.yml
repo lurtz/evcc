@@ -6,12 +6,12 @@ permissions:
 on:
   push:
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+-lurtz"
 
 jobs:
   guard:
     name: Validate Tag
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
     outputs:
@@ -33,7 +33,7 @@ jobs:
   call-build-workflow:
     needs:
       - guard
-    uses: evcc-io/evcc/.github/workflows/default.yml@master
+    uses: ./.github/workflows/default.yml
     permissions:
       contents: read
       actions: write
@@ -43,7 +43,7 @@ jobs:
     needs:
       - guard
       - call-build-workflow
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
       id-token: write # depot OIDC
@@ -70,7 +70,7 @@ jobs:
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
           images: |
-            evcc/evcc
+            ellutzor/evcc
           # a bugfix release of an older line must not move :latest
           flavor: |
             latest=${{ needs.guard.outputs.latest }}
@@ -91,7 +91,9 @@ jobs:
     needs:
       - guard
       - call-build-workflow
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: false
 
     permissions:
       contents: write
@@ -136,7 +138,7 @@ jobs:
       - name: Create Github Release
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7
         with:
-          version: '~> v2'
+          version: "~> v2"
           args: release --clean
         env:
           # use RELEASE_DEPLOY_TOKEN for access to evcc-io/homebrew-tap
@@ -168,8 +170,9 @@ jobs:
     needs:
       - guard
       - docker
-    if: needs.guard.outputs.latest == 'true'
-    runs-on: depot-ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: needs.guard.outputs.latest == 'true' && false
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read
@@ -188,8 +191,9 @@ jobs:
     needs:
       - guard
       - docker
-    if: needs.guard.outputs.latest == 'true'
-    runs-on: depot-ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: needs.guard.outputs.latest == 'true' && false
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read
@@ -220,7 +224,7 @@ jobs:
     needs:
       - docker
       - apt
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: write

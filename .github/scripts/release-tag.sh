@@ -24,8 +24,8 @@ MASTER_REF="${MASTER_REF:-origin/master}"
 validate() {
 	local tag=$1
 
-	if [[ ! $tag =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-		echo "::error::invalid release tag '$tag', expected MAJOR.MINOR.PATCH" >&2
+	if [[ ! $tag =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)-lurtz$ ]]; then
+		echo "::error::invalid release tag '$tag', expected MAJOR.MINOR.PATCH-lurtz" >&2
 		return 1
 	fi
 
@@ -37,7 +37,7 @@ validate() {
 	fi
 
 	local releases
-	releases=$(git tag --list | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort --version-sort) || true
+	releases=$(git tag --list | grep -E '^[0-9]+\.[0-9]+\.[0-9]+-lurtz$' | sort --version-sort) || true
 
 	# a release must build on its own line. a tag pushed from the wrong branch
 	# would otherwise ship an older commit under a newer version.
@@ -83,17 +83,17 @@ self_test() {
 
 	git init --quiet --initial-branch=master .
 	commit one
-	git tag 0.1.0
+	git tag 0.1.0-lurtz
 	git checkout --quiet -b fix
 	commit two
-	git tag 0.1.1 # bugfix release off master
-	git tag 0.1.2 # same commit as its predecessor
-	git tag 0.2.0 # feature release off master
+	git tag 0.1.1-lurtz # bugfix release off master
+	git tag 0.1.2-lurtz # same commit as its predecessor
+	git tag 0.2.0-lurtz # feature release off master
 	git checkout --quiet master
 	commit three
-	git tag 0.3.0
-	git tag 0.2.1 # tagged on the wrong branch, does not contain 0.2.0
-	git tag 9.9.9-fork # tags from forks must not count as a release
+	git tag 0.3.0-lurtz
+	git tag 0.2.1-lurtz # tagged on the wrong branch, does not contain 0.2.0
+	git tag 9.9.9-fork-lurtz # tags from forks must not count as a release
 
 	MASTER_REF=master
 
@@ -107,14 +107,14 @@ self_test() {
 		fi
 	}
 
-	expect 0.1.0 latest=false # feature release on master, superseded
-	expect 0.1.1 latest=false # bugfix release off master, older line
-	expect 0.3.0 latest=true  # newest release
-	expect 0.1.2 FAIL         # same commit as its predecessor
-	expect 0.2.1 FAIL         # tagged on the wrong branch
-	expect 0.2.0 FAIL         # feature release not on master
-	expect 0.1 FAIL           # not MAJOR.MINOR.PATCH
-	expect v0.1.0 FAIL        # no v prefix allowed
+	expect 0.1.0-lurtz latest=false # feature release on master, superseded
+	expect 0.1.1-lurtz latest=false # bugfix release off master, older line
+	expect 0.3.0-lurtz latest=true  # newest release
+	expect 0.1.2-lurtz FAIL         # same commit as its predecessor
+	expect 0.2.1-lurtz FAIL         # tagged on the wrong branch
+	expect 0.2.0-lurtz FAIL         # feature release not on master
+	expect 0.1-lurtz FAIL           # not MAJOR.MINOR.PATCH-lurtz
+	expect v0.1.0-lurtz FAIL        # no v prefix allowed
 
 	[[ $failed == 0 ]] && echo "self-test ok"
 	return $failed

@@ -6,12 +6,12 @@ permissions:
 on:
   push:
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+-lurtz"
 
 jobs:
   guard:
     name: Validate Tag
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
     outputs:
@@ -43,10 +43,9 @@ jobs:
     needs:
       - guard
       - call-build-workflow
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
-      id-token: write # depot OIDC
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -63,22 +62,44 @@ jobs:
       # depot builders keep the Dockerfile's cache mounts on their own volumes,
       # so they need neither buildx nor the cache dance
       - name: Setup Depot
+        if: false
         uses: depot/setup-action@91bc8495a33ebfc504ffc89e5674379ccf23c29c # v1.7.2
+
+      - name: Setup Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+
+      - name: Restore build cache
+        uses: ./.github/actions/docker-cache
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
 
       - name: Meta
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
         with:
           images: |
-            evcc/evcc
+            ellutzor/evcc
           # a bugfix release of an older line must not move :latest
           flavor: |
             latest=${{ needs.guard.outputs.latest }}
 
       - name: Publish
+        # depot only available upstream
+        if: false
         uses: depot/build-push-action@0f27be7c41d76663a98518dfe68f1c46582242c4 # v1.19.0
         with:
           project: ${{ secrets.DEPOT_PROJECT_ID }}
+          context: .
+          platforms: linux/amd64,linux/arm64,linux/arm/v6
+          push: true
+          build-args: |
+            RELEASE=1
+          tags: ${{ steps.meta.outputs.tags }}
+
+      - name: Publish
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
           context: .
           platforms: linux/amd64,linux/arm64,linux/arm/v6
           push: true
@@ -91,7 +112,9 @@ jobs:
     needs:
       - guard
       - call-build-workflow
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: false
 
     permissions:
       contents: write
@@ -136,7 +159,7 @@ jobs:
       - name: Create Github Release
         uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7
         with:
-          version: '~> v2'
+          version: "~> v2"
           args: release --clean
         env:
           # use RELEASE_DEPLOY_TOKEN for access to evcc-io/homebrew-tap
@@ -168,8 +191,9 @@ jobs:
     needs:
       - guard
       - docker
-    if: needs.guard.outputs.latest == 'true'
-    runs-on: depot-ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: needs.guard.outputs.latest == 'true' && false
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read
@@ -188,8 +212,9 @@ jobs:
     needs:
       - guard
       - docker
-    if: needs.guard.outputs.latest == 'true'
-    runs-on: depot-ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: needs.guard.outputs.latest == 'true' && false
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read
@@ -220,7 +245,7 @@ jobs:
     needs:
       - docker
       - apt
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: write

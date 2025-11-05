@@ -6,12 +6,12 @@ permissions:
 on:
   push:
     tags:
-      - "*"
+      - "*lurtz*"
 
 jobs:
   call-build-workflow:
     if: startsWith(github.ref, 'refs/tags')
-    uses: evcc-io/evcc/.github/workflows/default.yml@master
+    uses: ./.github/workflows/default.yml
     permissions:
       contents: read
       actions: write
@@ -20,7 +20,7 @@ jobs:
     name: Publish Docker :release
     needs:
       - call-build-workflow
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
 
@@ -44,7 +44,7 @@ jobs:
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
           images: |
-            evcc/evcc
+            ellutzor/evcc
 
       - name: Publish
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
@@ -60,7 +60,9 @@ jobs:
     name: Github & APT
     needs:
       - call-build-workflow
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: false
 
     permissions:
       contents: write
@@ -127,7 +129,9 @@ jobs:
     name: Demo
     needs:
       - docker
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: false
 
     permissions:
       contents: read
@@ -145,7 +149,9 @@ jobs:
     name: Hassio Addon
     needs:
       - docker
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: false
 
     permissions:
       contents: read

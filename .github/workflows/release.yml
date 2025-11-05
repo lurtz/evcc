@@ -4,9 +4,9 @@ permissions:
   contents: read
 
 on:
-  push:
-    tags:
-      - "*"
+  # push:
+  #   tags:
+  #     - "*"
 
 jobs:
   call-build-workflow:

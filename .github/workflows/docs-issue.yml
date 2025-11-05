@@ -4,9 +4,9 @@ permissions:
   contents: read
 
 on:
-  pull_request_target:
-    types: [closed]
-    branches: [master]
+  # pull_request_target:
+  #   types: [closed]
+  #   branches: [master]
 
 jobs:
   check-label-and-create-issue:

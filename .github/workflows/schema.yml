@@ -1,14 +1,15 @@
 name: Validate Schema
 
 on:
-  push:
-    paths:
-      - "*.yaml"
-      - "*.json"
-  pull_request:
-    paths:
-      - "*.yaml"
-      - "*.json"
+  workflow_dispatch:
+  # push:
+  #   paths:
+  #     - "*.yaml"
+  #     - "*.json"
+  # pull_request:
+  #   paths:
+  #     - "*.yaml"
+  #     - "*.json"
 
 jobs:
   build:

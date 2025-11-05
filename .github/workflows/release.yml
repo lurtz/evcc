@@ -6,7 +6,7 @@ permissions:
 on:
   push:
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+-lurtz"
 
 jobs:
   guard:
@@ -33,7 +33,7 @@ jobs:
   call-build-workflow:
     needs:
       - guard
-    uses: evcc-io/evcc/.github/workflows/default.yml@master
+    uses: ./.github/workflows/default.yml
     permissions:
       contents: read
       actions: write
@@ -43,7 +43,7 @@ jobs:
     needs:
       - guard
       - call-build-workflow
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
 
@@ -73,7 +73,7 @@ jobs:
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
           images: |
-            evcc/evcc
+            ellutzor/evcc
           # a bugfix release of an older line must not move :latest
           flavor: |
             latest=${{ needs.guard.outputs.latest }}
@@ -93,7 +93,9 @@ jobs:
     needs:
       - guard
       - call-build-workflow
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: false
 
     permissions:
       contents: write
@@ -165,7 +167,9 @@ jobs:
       - guard
       - docker
     if: needs.guard.outputs.latest == 'true'
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: false
 
     permissions:
       contents: read
@@ -185,7 +189,9 @@ jobs:
       - guard
       - docker
     if: needs.guard.outputs.latest == 'true'
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: false
 
     permissions:
       contents: read
@@ -216,7 +222,7 @@ jobs:
     needs:
       - docker
       - apt
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: write

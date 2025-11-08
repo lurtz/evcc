@@ -14,7 +14,7 @@ on:
 jobs:
   call-build-workflow:
     # if: startsWith(github.ref, 'refs/tags')
-    uses: evcc-io/evcc/.github/workflows/default.yml@master
+    uses: lurtz/evcc/.github/workflows/default.yml@enable-some-workflows
     permissions:
       contents: read
       actions: write

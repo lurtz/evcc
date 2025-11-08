@@ -60,37 +60,39 @@ jobs:
           tags: test
           # tags: ${{ steps.meta.outputs.tags }}
 
-  # apt:
-  #   name: Github & APT
-  #   needs:
-  #     - call-build-workflow
-  #   runs-on: depot-ubuntu-24.04-arm
+  apt:
+    name: Github & APT
+    needs:
+      - call-build-workflow
+    runs-on: ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: false
 
-  #   permissions:
-  #     contents: write
-  #     actions: read
+    permissions:
+      contents: write
+      actions: read
 
-  #   steps:
-  #     - uses: actions/checkout@v5
-  #       with:
-  #         fetch-depth: 0
-  #         persist-credentials: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
-  #     - name: Setup Go
-  #       uses: actions/setup-go@v6
-  #       with:
-  #         go-version-file: go.mod
-  #       id: go
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+        id: go
 
-  #     - name: Patch ASN1
-  #       run: make patch-asn1-sudo
+      - name: Patch ASN1
+        run: make patch-asn1-sudo
 
-  #     - name: Get dist from cache
-  #       uses: actions/cache/restore@v4
-  #       id: cache-dist
-  #       with:
-  #         path: dist
-  #         key: ${{ runner.os }}-${{ github.sha }}-dist
+      - name: Get dist from cache
+        uses: actions/cache/restore@v4
+        id: cache-dist
+        with:
+          path: dist
+          key: ${{ runner.os }}-${{ github.sha }}-dist
 
       # gokrazy image
       # - name: Prepare Image
@@ -106,71 +108,75 @@ jobs:
       # - name: Build Root Filesystem
       #   run: make image-rootfs
 
-  #     - name: Create Github Release
-  #       uses: goreleaser/goreleaser-action@v6
-  #       with:
-  #         version: '~> v2'
-  #         args: release --clean
-  #       env:
-  #         # use RELEASE_DEPLOY_TOKEN for access to evcc-io/homebrew-tap
-  #         GITHUB_TOKEN: ${{ secrets.RELEASE_DEPLOY_TOKEN }}
+      - name: Create Github Release
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --clean
+        env:
+          # use RELEASE_DEPLOY_TOKEN for access to evcc-io/homebrew-tap
+          GITHUB_TOKEN: ${{ secrets.RELEASE_DEPLOY_TOKEN }}
 
-  #     - uses: actions/setup-python@v6
-  #       with:
-  #         python-version: 3.12
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
 
-  #     - name: Install Cloudsmith CLI
-  #       run: pip install --upgrade cloudsmith-cli
+      - name: Install Cloudsmith CLI
+        run: pip install --upgrade cloudsmith-cli
 
-  #     - name: Publish .deb to Cloudsmith
-  #       env:
-  #         CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
-  #       run: make apt-release
+      - name: Publish .deb to Cloudsmith
+        env:
+          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+        run: make apt-release
 
-  # demo:
-  #   name: Demo
-  #   needs:
-  #     - docker
-  #   runs-on: depot-ubuntu-24.04-arm
+  demo:
+    name: Demo
+    needs:
+      - docker
+    runs-on: ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: false
 
-  #   permissions:
-  #     contents: read
+    permissions:
+      contents: read
 
-  #   env:
-  #     FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-  #   steps:
-  #     - uses: actions/checkout@v5
-  #       with:
-  #         persist-credentials: false
-  #     - uses: superfly/flyctl-actions/setup-flyctl@master
-  #     - run: flyctl deploy --local-only --config packaging/fly.toml
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --local-only --config packaging/fly.toml
 
-  # hassio:
-  #   name: Hassio Addon
-  #   needs:
-  #     - docker
-  #   runs-on: depot-ubuntu-24.04-arm
+  hassio:
+    name: Hassio Addon
+    needs:
+      - docker
+    runs-on: ubuntu-24.04-arm
+    # only interested in docker images in this fork
+    if: false
 
-  #   permissions:
-  #     contents: read
+    permissions:
+      contents: read
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@master
-  #       with:
-  #         repository: evcc-io/hassio-addon
-  #         token: ${{ secrets.HASSIO_DEPLOY_TOKEN }}
-  #         path: ./hassio
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+        with:
+          repository: evcc-io/hassio-addon
+          token: ${{ secrets.HASSIO_DEPLOY_TOKEN }}
+          path: ./hassio
 
-  #     - name: Update version
-  #       run: |
-  #         sed -i -e s#version.*#version\:\ $(echo ${{ github.ref }} | sed -e s#refs/tags/##)# ./hassio/evcc/config.yaml
+      - name: Update version
+        run: |
+          sed -i -e s#version.*#version\:\ $(echo ${{ github.ref }} | sed -e s#refs/tags/##)# ./hassio/evcc/config.yaml
 
-  #     - name: Push
-  #       run: |
-  #         cd ./hassio
-  #         git add .
-  #         git config user.name github-actions
-  #         git config user.email github-actions@github.com
-  #         git commit -am "Mirror evcc release"
-  #         git push
+      - name: Push
+        run: |
+          cd ./hassio
+          git add .
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit -am "Mirror evcc release"
+          git push

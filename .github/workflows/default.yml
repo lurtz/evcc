@@ -6,6 +6,7 @@ on:
       - master
       - master-lurtz
   pull_request:
+  workflow_call:
 
 jobs:
   clean:

@@ -57,8 +57,7 @@ jobs:
           push: true
           build-args: |
             RELEASE=1
-          tags: ellutzor/evcc:test
-          # tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }}
 
   apt:
     name: Github & APT

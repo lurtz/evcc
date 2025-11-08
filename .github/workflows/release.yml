@@ -4,16 +4,13 @@ permissions:
   contents: read
 
 on:
-  pull_request:
-    branches:
-      - master-lurtz
-  # push:
-  #   tags:
-  #     - "*"
+  push:
+    tags:
+      - "*lurtz*"
 
 jobs:
   call-build-workflow:
-    # if: startsWith(github.ref, 'refs/tags')
+    if: startsWith(github.ref, 'refs/tags')
     uses: ./.github/workflows/default.yml
     permissions:
       contents: read

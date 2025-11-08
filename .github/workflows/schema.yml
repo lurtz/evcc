@@ -1,6 +1,7 @@
 name: Validate Schema
 
 on:
+  workflow_dispatch:
   # push:
   #   paths:
   #     - "*.yaml"

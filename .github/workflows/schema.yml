@@ -1,19 +1,18 @@
 name: Validate Schema
 
 on:
-  workflow_dispatch:
-  # push:
-  #   paths:
-  #     - "*.yaml"
-  #     - "*.json"
-  # pull_request:
-  #   paths:
-  #     - "*.yaml"
-  #     - "*.json"
+  push:
+    paths:
+      - "*.yaml"
+      - "*.json"
+  pull_request:
+    paths:
+      - "*.yaml"
+      - "*.json"
 
 jobs:
   build:
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read

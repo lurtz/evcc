@@ -50,7 +50,7 @@ const (
 	em2GoDuoRegConPower          = 24 // Uint32 RO 1W
 	em2GoDuoRegConEnergy         = 28 // Uint32 RO 0.1KWh
 	em2GoDuoRegConChargeDuration = 34 // Uint32 RO 1s
-	em2GoDuoRegConCurrentLimit   = 44 // Uint16 WR 1A
+	em2GoDuoRegConCurrentLimit   = 44 // Uint16 WR 0.1A
 	em2GoDuoRegConChargeCommand  = 46 // Uint16 WR ENUM
 )
 
@@ -162,7 +162,7 @@ func (wb *Em2GoDuo) Enable(enable bool) error {
 // MaxCurrent implements the api.Charger interface
 func (wb *Em2GoDuo) MaxCurrent(current int64) error {
 	b := make([]byte, 2)
-	binary.BigEndian.PutUint16(b, uint16(current))
+	binary.BigEndian.PutUint16(b, uint16(current*10))
 
 	_, err := wb.conn.WriteMultipleRegisters(wb.base+em2GoDuoRegConCurrentLimit, 1, b)
 
@@ -178,7 +178,7 @@ func (wb *Em2GoDuo) GetMaxCurrent() (float64, error) {
 		return 0, err
 	}
 
-	return float64(binary.BigEndian.Uint16(b)), err
+	return float64(binary.BigEndian.Uint16(b)) / 10, err
 }
 
 var _ api.Meter = (*Em2GoDuo)(nil)

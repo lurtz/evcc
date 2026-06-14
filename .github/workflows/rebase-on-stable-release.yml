@@ -1,0 +1,87 @@
+name: Rebase On Stable Release
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-release:
+    name: Check Stable Release Age
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      should_run: ${{ steps.release.outputs.should_run }}
+      latest_tag: ${{ steps.release.outputs.latest_tag }}
+    steps:
+      - name: Resolve latest stable release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_json=$(gh --repo evcc-io/evcc release list --exclude-drafts --exclude-pre-releases --json tagName --limit 100)
+          latest_tag=$(jq -r '.[0].tagName // empty' <<< "$release_json")
+
+          if [[ -z "$latest_tag" ]]; then
+            echo "No stable release found."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "latest_tag=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ ! "$latest_tag" =~ ^([0-9]+)\.([0-9]+)\.0$ ]]; then
+            echo "Latest stable release is not a feature release: $latest_tag"
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "latest_tag=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          major=${BASH_REMATCH[1]}
+          minor=${BASH_REMATCH[2]}
+          previous_minor=$((minor - 1))
+          latest_tag=$(jq -r --arg major "$major" --argjson minor "$previous_minor" '
+            map(select(.tagName | test("^" + $major + "\\." + ($minor | tostring) + "\\.[0-9]+$")))
+            | max_by(.tagName | split(".")[2] | tonumber)
+            | .tagName // empty
+          ' <<< "$release_json")
+
+          if [[ -z "$latest_tag" ]]; then
+            echo "No bugfix release found for $major.$previous_minor."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "latest_tag=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Latest feature release: $major.$minor.0"
+          echo "Selected bugfix release: $latest_tag"
+
+          echo "latest_tag=$latest_tag" >> "$GITHUB_OUTPUT"
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+
+  rebase:
+    name: Rebase master-lurtz
+    needs: check-release
+    if: needs.check-release.outputs.should_run == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      LATEST_TAG: ${{ needs.check-release.outputs.latest_tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      - name: Rebase if tag not already processed
+        id: processed
+        run: |
+          ./rebase-on-tag.sh --push "$LATEST_TAG"

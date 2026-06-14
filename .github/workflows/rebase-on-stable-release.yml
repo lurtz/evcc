@@ -1,0 +1,76 @@
+name: Rebase On Stable Release
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-release:
+    name: Check Stable Release Age
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      should_run: ${{ steps.release.outputs.should_run }}
+      latest_tag: ${{ steps.release.outputs.latest_tag }}
+    steps:
+      - name: Resolve latest stable release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_json=$(gh --repo evcc-io/evcc release list --exclude-drafts --exclude-pre-releases --json tagName,publishedAt --limit 1)
+          latest_tag=$(jq -r '.[0].tagName // empty' <<< "$release_json")
+          published_at=$(jq -r '.[0].publishedAt // empty' <<< "$release_json")
+
+          if [[ -z "$latest_tag" || -z "$published_at" ]]; then
+            echo "No stable release found."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "latest_tag=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          published_ts=$(date -d "$published_at" +%s)
+          now_ts=$(date +%s)
+          age_days=$(( (now_ts - published_ts) / 86400 ))
+
+          echo "Latest stable release: $latest_tag"
+          echo "Published at: $published_at"
+          echo "Age in days: $age_days"
+
+          if (( age_days >= 7 )); then
+            should_run=true
+          else
+            should_run=false
+          fi
+
+          echo "latest_tag=$latest_tag" >> "$GITHUB_OUTPUT"
+          echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
+
+  rebase:
+    name: Rebase master-lurtz
+    needs: check-release
+    if: needs.check-release.outputs.should_run == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      LATEST_TAG: ${{ needs.check-release.outputs.latest_tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      - name: Rebase if tag not already processed
+        id: processed
+        run: |
+          ./rebase-on-tag.sh "$LATEST_TAG"

@@ -20,14 +20,18 @@ git remote get-url evcc > /dev/null 2>&1 || git remote add evcc https://github.c
 echo "Rebasing on tag $latest_tag"
 
 git fetch evcc # evcc is upstream
-git checkout master-lurtz
-git pull
-git rebase $latest_tag
+git fetch origin
+
+tmp_dir=$(mktemp -d /tmp/rebase-on-tag.XXXXXX)
+trap 'rm -rf "$tmp_dir"' EXIT
+
+git format-patch --output-directory "$tmp_dir" evcc/master..origin/master-lurtz
+git checkout "$latest_tag"
+git am --3way "$tmp_dir"/*.patch || { echo "Patch application failed. Aborting."; exit 1; }
 git tag $latest_tag-lurtz
 
 if [ "$push_enabled" = "--push" ]; then
 	echo "Pushing tag ${latest_tag}-lurtz to origin."
-	git push --force-with-lease
 	git push origin $latest_tag-lurtz
 else
 	echo "Push is disabled. Skipping push of tag ${latest_tag}-lurtz to origin."

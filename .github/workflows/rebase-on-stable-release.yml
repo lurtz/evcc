@@ -73,4 +73,4 @@ jobs:
       - name: Rebase if tag not already processed
         id: processed
         run: |
-          ./rebase-on-tag.sh "$LATEST_TAG"
+          ./rebase-on-tag.sh --push "$LATEST_TAG"

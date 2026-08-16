@@ -12,7 +12,7 @@
 			"nvmVersion": "latest"
 		}
 	},
-	"postCreateCommand": "make install-ui && make install",
+	"postCreateCommand": "curl -fsSL https://vite.plus | bash && bash -ic 'make install-ui && make install'",
 	"customizations": {
 		"vscode": {
 			"extensions": [

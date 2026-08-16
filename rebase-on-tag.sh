@@ -22,8 +22,11 @@ git remote get-url evcc > /dev/null 2>&1 || git remote add evcc https://github.c
 
 echo "Rebasing on tag $latest_tag"
 
-git fetch evcc # evcc is upstream
+# evcc is upstream
+git fetch evcc
+git fetch evcc --tags
 git fetch origin
+git fetch origin --tags
 
 git checkout "$latest_tag"
 git rev-list --reverse --topo-order evcc/master..origin/master-lurtz \

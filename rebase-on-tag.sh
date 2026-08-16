@@ -25,13 +25,11 @@ echo "Rebasing on tag $latest_tag"
 git fetch evcc # evcc is upstream
 git fetch origin
 
-tmp_dir=$(mktemp -d /tmp/rebase-on-tag.XXXXXX)
-trap 'rm -rf "$tmp_dir"' EXIT
-
-git format-patch --output-directory "$tmp_dir" evcc/master..origin/master-lurtz
 git checkout "$latest_tag"
-git am --3way "$tmp_dir"/*.patch || {
-	echo "Patch application failed. Aborting."
+git rev-list --reverse --topo-order evcc/master..origin/master-lurtz \
+	| git cherry-pick --stdin || {
+	echo "Cherry-pick failed. Aborting."
+	git cherry-pick --abort
 	exit 1
 }
 git tag $latest_tag-lurtz

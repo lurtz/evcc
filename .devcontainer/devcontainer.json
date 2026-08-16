@@ -2,8 +2,9 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/go
 {
 	"name": "evcc",
-	"image": "mcr.microsoft.com/devcontainers/go:2-1.25-trixie",
+	"image": "mcr.microsoft.com/devcontainers/go:2-1.26-trixie",
 	"features": {
+		"ghcr.io/helpers4/devcontainer/vite-plus:1": {},
 		"ghcr.io/devcontainers/features/node:1": {
 			"nodeGypDependencies": true,
 			"installYarnUsingApt": true,
@@ -12,7 +13,7 @@
 			"nvmVersion": "latest"
 		}
 	},
-	"postCreateCommand": "curl -fsSL https://vite.plus | bash && bash -ic 'make install-ui && make install'",
+	"postCreateCommand": "make install-ui && make install",
 	"customizations": {
 		"vscode": {
 			"extensions": [

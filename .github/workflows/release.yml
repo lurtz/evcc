@@ -166,10 +166,9 @@ jobs:
     needs:
       - guard
       - docker
-    if: needs.guard.outputs.latest == 'true'
-    runs-on: ubuntu-24.04-arm
     # only interested in docker images in this fork
-    if: false
+    if: needs.guard.outputs.latest == 'true' && false
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read
@@ -188,10 +187,9 @@ jobs:
     needs:
       - guard
       - docker
-    if: needs.guard.outputs.latest == 'true'
-    runs-on: ubuntu-24.04-arm
     # only interested in docker images in this fork
-    if: false
+    if: needs.guard.outputs.latest == 'true' && false
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read

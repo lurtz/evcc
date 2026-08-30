@@ -23,33 +23,44 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          release_json=$(gh --repo evcc-io/evcc release list --exclude-drafts --exclude-pre-releases --json tagName,publishedAt --limit 1)
+          release_json=$(gh --repo evcc-io/evcc release list --exclude-drafts --exclude-pre-releases --json tagName --limit 100)
           latest_tag=$(jq -r '.[0].tagName // empty' <<< "$release_json")
-          published_at=$(jq -r '.[0].publishedAt // empty' <<< "$release_json")
 
-          if [[ -z "$latest_tag" || -z "$published_at" ]]; then
+          if [[ -z "$latest_tag" ]]; then
             echo "No stable release found."
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             echo "latest_tag=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          published_ts=$(date -d "$published_at" +%s)
-          now_ts=$(date +%s)
-          age_days=$(( (now_ts - published_ts) / 86400 ))
-
-          echo "Latest stable release: $latest_tag"
-          echo "Published at: $published_at"
-          echo "Age in days: $age_days"
-
-          if (( age_days >= 7 )); then
-            should_run=true
-          else
-            should_run=false
+          if [[ ! "$latest_tag" =~ ^([0-9]+)\.([0-9]+)\.0$ ]]; then
+            echo "Latest stable release is not a feature release: $latest_tag"
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "latest_tag=" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
+          major=${BASH_REMATCH[1]}
+          minor=${BASH_REMATCH[2]}
+          previous_minor=$((minor - 1))
+          latest_tag=$(jq -r --arg major "$major" --argjson minor "$previous_minor" '
+            map(select(.tagName | test("^" + $major + "\\." + ($minor | tostring) + "\\.[0-9]+$")))
+            | max_by(.tagName | split(".")[2] | tonumber)
+            | .tagName // empty
+          ' <<< "$release_json")
+
+          if [[ -z "$latest_tag" ]]; then
+            echo "No bugfix release found for $major.$previous_minor."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "latest_tag=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Latest feature release: $major.$minor.0"
+          echo "Selected bugfix release: $latest_tag"
+
           echo "latest_tag=$latest_tag" >> "$GITHUB_OUTPUT"
-          echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
 
   rebase:
     name: Rebase master-lurtz

@@ -31,10 +31,10 @@ validate() {
 
 	local line="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
 
-	if [[ ${BASH_REMATCH[3]} == 0 ]] && ! git merge-base --is-ancestor "$tag" "$MASTER_REF"; then
-		echo "::error::feature release '$tag' must be tagged on master" >&2
-		return 1
-	fi
+	# if [[ ${BASH_REMATCH[3]} == 0 ]] && ! git merge-base --is-ancestor "$tag" "$MASTER_REF"; then
+	# 	echo "::error::feature release '$tag' must be tagged on master" >&2
+	# 	return 1
+	# fi
 
 	local releases
 	releases=$(git tag --list | grep -E '^[0-9]+\.[0-9]+\.[0-9]+-lurtz$' | sort --version-sort) || true

@@ -72,9 +72,19 @@ jobs:
     env:
       LATEST_TAG: ${{ needs.check-release.outputs.latest_tag }}
     steps:
+      - name: Check release token
+        env:
+          RELEASE_DEPLOY_TOKEN: ${{ secrets.RELEASE_DEPLOY_TOKEN }}
+        run: |
+          if [[ -z "$RELEASE_DEPLOY_TOKEN" ]]; then
+            echo "::error::RELEASE_DEPLOY_TOKEN must be configured with repository Contents and Workflows write permissions so tag pushes trigger the release workflow."
+            exit 1
+          fi
+
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          token: ${{ secrets.RELEASE_DEPLOY_TOKEN }}
 
       - name: Configure git
         run: |
